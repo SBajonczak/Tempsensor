@@ -1,0 +1,17 @@
+{
+    "sleep":{
+        "timeinMinutes":30
+    },
+    "wifi":{
+        "ssid":"Ponyhof",
+        "password":""
+    },
+    "mqtt":{
+        "clientname":"Wohnzimmer",
+        "basetopic":"temperatures",
+        "server":"192.168.178.201",
+        "username":"sascha",
+        "password":"tumalonga2411",
+        "port":1886
+    }
+}
