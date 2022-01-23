@@ -4,7 +4,7 @@
     },
     "wifi":{
         "ssid":"Ponyhof",
-        "password":"Tumalonga2411"
+        "password":""
     },
     "mqtt":{
         "clientname":"Wohnzimmer",
