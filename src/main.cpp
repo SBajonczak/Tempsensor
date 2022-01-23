@@ -16,9 +16,6 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 BatteryProcessor battery;
 
-const char *ssid = "Ponyhof";
-const char *password = "Tumalonga2411";
-const char *mqtt_server = "mediacenter";
 
 // GPIO where the DS18B20 is connected to
 const int oneWireBus = GPIO_PIN;
@@ -83,9 +80,9 @@ void connectWifi()
   while (wifiStatus != WL_CONNECTED)
   {
     Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(ssid);
+    Serial.println(ConfigurationManager().getInstance()->GetWifiSsid());
     // Connect to WPA/WPA2 network:
-    wifiStatus = WiFi.begin(ssid, password);
+    wifiStatus = WiFi.begin(ConfigurationManager().getInstance()->GetWifiSsid(), ConfigurationManager().getInstance()->GetWifiPassword());
     // wait 10 seconds for connection:
     delay(1000);
   }
