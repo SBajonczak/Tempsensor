@@ -30,7 +30,7 @@ String ConfigurationManager::GetMqttUser() { return this->MqttUser; }
 String ConfigurationManager::GetMqttPassword() { return this->MqttPassword; }
 String ConfigurationManager::GetBaseTopic() { return this->BaseToic; }
 int ConfigurationManager::GetSleepTime() { return this->SleepTime; }
-
+float ConfigurationManager::GetVoltageMultiplicator() { return this->voltagemuliplicator; }
 
 
 String ConfigurationManager::GetJson()
@@ -62,6 +62,8 @@ DynamicJsonDocument ConfigurationManager::GetJsonDocument()
   doc["mqtt"]["password"] = this->GetMqttPassword();
   doc["mqtt"]["basetopic"] = this->GetBaseTopic();
   doc["sleep"]["time"] = this->GetSleepTime();
+
+  
  
   return doc;
 }
@@ -72,6 +74,7 @@ void ConfigurationManager::ApplyJsonInput(String json)
   deserializeJson(jData, json);
 
 
+  this->voltagemuliplicator = jData["battery"]["muliplicator"].as<float>();
   this->MqttServer = jData["mqtt"]["server"].as<String>();
   this->MqttUser = jData["mqtt"]["user"].as<String>();
   this->MqttPassword = jData["mqtt"]["password"].as<String>();

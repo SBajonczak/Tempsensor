@@ -16,7 +16,6 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 BatteryProcessor battery;
 
-
 // GPIO where the DS18B20 is connected to
 const int oneWireBus = GPIO_PIN;
 
@@ -42,7 +41,7 @@ boolean reconnect()
 
 void sendMQTTMessage()
 {
-
+  float rawVoltage = battery.getVolt();
   float temperatureC = sensors.getTempCByIndex(0);
   float temperatureF = sensors.getTempFByIndex(0);
 
@@ -55,12 +54,14 @@ void sendMQTTMessage()
     reconnect();
   }
   // Get wakeup reason
- 
+
   DynamicJsonDocument doc(1024);
   doc["clientname"] = ConfigurationManager::getInstance()->GetClientName();
   doc["measures"]["voltage"] = temperatureC;
   doc["measures"]["celsius"] = temperatureC;
   doc["measures"]["fahrenheit"] = temperatureF;
+  doc["voltage"]["rawVoltage"] = rawVoltage;
+  doc["voltage"]["adjustedVoltage"] = rawVoltage * ConfigurationManager::getInstance()->GetVoltageMultiplicator();
   doc["settings"]["intervallInMinutes"] = ConfigurationManager::getInstance()->GetSleepTime();
   String json;
   serializeJson(doc, json);

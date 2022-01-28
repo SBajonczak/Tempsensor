@@ -12,3 +12,5 @@ float BatteryProcessor::getVolt()
     this->lastvoltage = analogRead(A0);
     return this->lastvoltage;
 }
+
+

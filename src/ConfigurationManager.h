@@ -1,4 +1,4 @@
-#include<Arduino.h>
+#include <Arduino.h>
 #include <ArduinoJson.h>
 /*
   StateManager.h - Helper Libary for managing the Homie states.
@@ -24,7 +24,7 @@ public:
   String GetClientName();
   String GetJson();
   int GetSleepTime();
-
+  float GetVoltageMultiplicator();
   void StoreSettings();
   void ReadSettings();
   void ApplyJsonInput(String json);
@@ -42,6 +42,7 @@ private:
   static ConfigurationManager *instance;
   float VccAdjustSetting;
   int SleepTime;
+  float voltagemuliplicator;
   String WifiSsid;
   String WifiPassword;
   String BaseToic;
