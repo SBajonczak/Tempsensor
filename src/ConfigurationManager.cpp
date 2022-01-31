@@ -10,7 +10,6 @@ ConfigurationManager *ConfigurationManager::instance = nullptr;
 
 #define JSON_DOCSIZE 1024
 
-
 void ConfigurationManager::setup()
 {
 }
@@ -31,7 +30,7 @@ String ConfigurationManager::GetMqttPassword() { return this->MqttPassword; }
 String ConfigurationManager::GetBaseTopic() { return this->BaseToic; }
 int ConfigurationManager::GetSleepTime() { return this->SleepTime; }
 float ConfigurationManager::GetVoltageMultiplicator() { return this->voltagemuliplicator; }
-
+String ConfigurationManager::GetStaticIPAdress() { return this->StaticIPAdress; }
 
 String ConfigurationManager::GetJson()
 {
@@ -56,6 +55,7 @@ DynamicJsonDocument ConfigurationManager::GetJsonDocument()
   DynamicJsonDocument doc(JSON_DOCSIZE);
   doc["wifi"]["ssid"] = this->GetWifiSsid();
   doc["wifi"]["password"] = this->GetWifiPassword();
+  doc["wifi"]["staticIp"] = this->GetStaticIPAdress();
   doc["mqtt"]["server"] = this->GetMqttServer();
   doc["mqtt"]["port"] = this->GetMqttPort();
   doc["mqtt"]["user"] = this->GetMqttUser();
@@ -63,8 +63,6 @@ DynamicJsonDocument ConfigurationManager::GetJsonDocument()
   doc["mqtt"]["basetopic"] = this->GetBaseTopic();
   doc["sleep"]["time"] = this->GetSleepTime();
 
-  
- 
   return doc;
 }
 
@@ -73,18 +71,18 @@ void ConfigurationManager::ApplyJsonInput(String json)
   DynamicJsonDocument jData(2048);
   deserializeJson(jData, json);
 
-
+  this->StaticIPAdress = jData["wifi"]["staticIp"].as<String>();
   this->voltagemuliplicator = jData["battery"]["muliplicator"].as<float>();
   this->MqttServer = jData["mqtt"]["server"].as<String>();
   this->MqttUser = jData["mqtt"]["user"].as<String>();
   this->MqttPassword = jData["mqtt"]["password"].as<String>();
   this->MqttPort = jData["mqtt"]["port"];
   this->BaseToic = jData["mqtt"]["basetopic"].as<String>();
-  this->ClientName= jData["mqtt"]["clientname"].as<String>();
+  this->ClientName = jData["mqtt"]["clientname"].as<String>();
   this->WifiSsid = jData["wifi"]["ssid"].as<String>();
   this->WifiPassword = jData["wifi"]["password"].as<String>();
+  this->StaticIPAdress = jData["wifi"]["staticIp"].as<String>();
   this->SleepTime = jData["sleep"]["timeinMinutes"].as<int>();
- 
 }
 
 void ConfigurationManager::StoreSettings()

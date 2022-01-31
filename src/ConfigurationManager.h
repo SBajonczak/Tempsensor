@@ -17,6 +17,7 @@ public:
   String GetWifiSsid();
   String GetWifiPassword();
   String GetMqttServer();
+  String GetStaticIPAdress();
   int GetMqttPort();
   String GetMqttUser();
   String GetMqttPassword();
@@ -45,6 +46,7 @@ private:
   float voltagemuliplicator;
   String WifiSsid;
   String WifiPassword;
+  String StaticIPAdress;
   String BaseToic;
   String ClientName;
   String MqttServer;

@@ -1,13 +1,14 @@
 {
     "sleep": {
-        "timeinMinutes": 60
+        "timeinMinutes": 35
     },
     "battery": {
         "muliplicator": 0.0148230088
     },
     "wifi": {
         "ssid": "Ponyhof",
-        "password": "Tumalonga2411"
+        "password": "Tumalonga2411",
+        "staticIp":"192.168.178.220"
     },
     "mqtt": {
         "clientname": "Wohnzimmer",

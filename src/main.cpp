@@ -6,10 +6,10 @@
 
 #include "ConfigurationManager.h"
 #include "BatteryProcessor.h"
+#include "WifiManager.h"
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
-
 const char *BELL_TOPIC_NAME = "devices/doorbell/active";
 const char *BATTERY_TOPIC_NAME = "devices/doorbell/battery";
 WiFiClient espClient;
@@ -25,6 +25,7 @@ OneWire oneWire(oneWireBus);
 
 // Pass our oneWire reference to Dallas Temperature sensor
 DallasTemperature sensors(&oneWire);
+WifiManager wifimanager;
 
 boolean reconnect()
 {
@@ -39,27 +40,28 @@ boolean reconnect()
   return 0;
 }
 
-void sendMQTTMessage()
+void sendMQTTMessage(unsigned long timeBegin)
 {
   float rawVoltage = battery.getVolt();
   float temperatureC = sensors.getTempCByIndex(0);
   float temperatureF = sensors.getTempFByIndex(0);
 
-  char deviceId[13]; // need to define the static variable
-  uint8_t mac[6];
-  WiFi.macAddress(mac);
-  snprintf(deviceId, 13, "%02x%02x%02x%02x%02x%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   if (!client.connected())
   {
     reconnect();
   }
   // Get wakeup reason
 
+  unsigned long timeEnd = micros();
+  unsigned long duration = timeEnd - timeBegin;
+  double averageDuration = (double)duration / 1000.0;
+
   DynamicJsonDocument doc(1024);
   doc["clientname"] = ConfigurationManager::getInstance()->GetClientName();
-  doc["measures"]["voltage"] = temperatureC;
+
   doc["measures"]["celsius"] = temperatureC;
   doc["measures"]["fahrenheit"] = temperatureF;
+  doc["measures"]["duration"]= averageDuration;
   doc["voltage"]["rawVoltage"] = rawVoltage;
   doc["voltage"]["adjustedVoltage"] = rawVoltage * ConfigurationManager::getInstance()->GetVoltageMultiplicator();
   doc["settings"]["intervallInMinutes"] = ConfigurationManager::getInstance()->GetSleepTime();
@@ -73,26 +75,12 @@ void sendMQTTMessage()
   Serial.println(temperatureC);
   client.publish(topic.c_str(), json.c_str());
   client.disconnect();
-  delay(1000);
 }
 
-void connectWifi()
-{
-  while (wifiStatus != WL_CONNECTED)
-  {
-    Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(ConfigurationManager().getInstance()->GetWifiSsid());
-    // Connect to WPA/WPA2 network:
-    wifiStatus = WiFi.begin(ConfigurationManager().getInstance()->GetWifiSsid(), ConfigurationManager().getInstance()->GetWifiPassword());
-    // wait 10 seconds for connection:
-    delay(1000);
-  }
-}
 
 void setup()
 {
-  int start = millis();
-
+   unsigned long timeBegin = micros();
 #ifdef USE_LED
   pinMode(BUILTIN_LED, OUTPUT);
   ticker.attach(0.5, tick);
@@ -103,22 +91,10 @@ void setup()
   Serial.println(ESP.getResetReason());
 
   ConfigurationManager::getInstance()->ReadSettings();
-  Serial.println(ConfigurationManager::getInstance()->GetWifiSsid());
-  WiFi.begin(ConfigurationManager::getInstance()->GetWifiSsid(), ConfigurationManager::getInstance()->GetWifiPassword());
-  Serial.println("Connecting to WiFi.");
-  int _try = 0;
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.print(".");
-    delay(500);
-    _try++;
-    if (_try >= WIFI_CONNECT_TRY_COUNTER)
-    {
-      Serial.println("Impossible to connect WiFi network, go to deep sleep");
-      ESP.deepSleep(0);
-    }
-  }
-  Serial.println("Connected to the WiFi network");
+  
+  wifimanager.Initialize();
+  wifimanager.Connect();
+
   IPAddress ipAdress;
   ipAdress.fromString(ConfigurationManager::getInstance()->GetMqttServer());
   client.setServer(ipAdress, ConfigurationManager::getInstance()->GetMqttPort());
@@ -126,7 +102,7 @@ void setup()
   sensors.begin();
   // Initial request
   sensors.requestTemperatures();
-  sendMQTTMessage();
+  sendMQTTMessage(timeBegin);
 
 #ifdef USE_LED
   ticker.detach();
@@ -137,7 +113,8 @@ void setup()
   int sleepTime = ConfigurationManager::getInstance()->GetSleepTime();
   Serial.print("Going to sleep for (minutes) ");
   Serial.println(sleepTime);
-  ESP.deepSleep((sleepTime * 1000000) * 60); //71 minutes
+  // Disable WIFI on Wakeup
+  ESP.deepSleep(sleepTime * (1000000 * 60)); 
 }
 
 void loop()
